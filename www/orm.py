@@ -38,8 +38,8 @@ def create_pool(loop, **kw):
 def select(sql, args, size=None):
     log(sql, args)
     global __pool
-    with (yield from __pool.get()) as conn:
-        cur = yield from conn.cursor(aiomysql.DictCursor)
+    with (yield from __pool) as conn:
+        cur = yield from conn.cursor()
         yield from cur.execute(sql.replace('?', '%s'), args or ())
         if size:
             rs = yield from cur.fetchmany(size)
@@ -145,7 +145,7 @@ class ModelMetaclass(type):
         attrs['__primary_key__'] = primaryKey
         attrs['__fields__'] = fields
         # make sql
-        attrs['__select__'] = 'select `%s`, `%s` from `%s`' % (primaryKey, ','.join(escaped_fields), tableName)
+        attrs['__select__'] = 'select `%s`, %s from `%s`' % (primaryKey, ','.join(escaped_fields), tableName)
         attrs['__insert__'] = 'insert into `%s` (%s, `%s`) values (%s)' % (tableName,
                                                                           ', '.join(escaped_fields),
                                                                           primaryKey,
