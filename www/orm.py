@@ -39,7 +39,7 @@ def select(sql, args, size=None):
     log(sql, args)
     global __pool
     with (yield from __pool) as conn:
-        cur = yield from conn.cursor()
+        cur = yield from conn.cursor(aiomysql.DictCursor)
         yield from cur.execute(sql.replace('?', '%s'), args or ())
         if size:
             rs = yield from cur.fetchmany(size)
@@ -57,7 +57,7 @@ def execute(sql, args, autocommit=True):
         if not autocommit:
             yield from conn.begin()
         try:
-            cur = yield from conn.cursor()
+            cur = yield from conn.cursor(aiomysql.DictCursor)
             yield from cur.execute(sql.replace('?', '%s'), args)
             affected = cur.rowcount
             yield from cur.close()
