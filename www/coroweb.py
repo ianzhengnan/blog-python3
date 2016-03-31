@@ -113,7 +113,7 @@ class RequestHandler(object):
                     params = yield from request.post()
                     kw = dict(**params)
                 else:
-                    return web.HTTPBadRequest(reason='Unsupport Content-Type: %s' % request.content_type)
+                    return web.HTTPBadRequest(reason='Un-support Content-Type: %s' % request.content_type)
 
             if request.method == 'GET':
                 qs = request.query_string
@@ -146,13 +146,13 @@ class RequestHandler(object):
                 for name in self._required_kw_args:
                     if not name in kw:
                         return web.HTTPBadRequest(reason='Missing argment: %s' % name)
-            logging.info('call with args: %s' % str(kw))
 
-            try:
-                r = yield from self._func(**kw)
-                return r
-            except APIError as e:
-                return dict(error=e.error, data=e.data, message=e.message)
+        logging.info('call with args: %s' % str(kw))
+        try:
+            r = yield from self._func(**kw)
+            return r
+        except APIError as e:
+            return dict(error=e.error, data=e.data, message=e.message)
 
 
 
