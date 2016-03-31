@@ -7,7 +7,6 @@ import asyncio, logging
 
 import aiomysql
 
-
 def log(sql, args=()):
     logging.info('SQL: %s' % sql)
 
@@ -39,7 +38,7 @@ def create_pool(loop, **kw):
 def select(sql, args, size=None):
     log(sql, args)
     global __pool
-    with (yield from __pool) as conn:
+    with (yield from __pool.get()) as conn:
         cur = yield from conn.cursor(aiomysql.DictCursor)
         yield from cur.execute(sql.replace('?', '%s'), args or ())
         if size:
@@ -51,15 +50,22 @@ def select(sql, args, size=None):
         return rs
 
 @asyncio.coroutine
-def execute(sql, args):
+def execute(sql, args, autocommit=True):
     log(sql)
+    global __pool
     with (yield from __pool) as conn:
+        if not autocommit:
+            yield from conn.begin()
         try:
             cur = yield from conn.cursor()
             yield from cur.execute(sql.replace('?', '%s'), args)
             affected = cur.rowcount
             yield from cur.close()
+            if not autocommit:
+                yield from conn.commit()
         except BaseException as e:
+            if not autocommit:
+                yield from conn.rollback()
             raise
         return affected
 
@@ -73,7 +79,7 @@ class Field(object):
         self.default = default
 
     def __str__(self):
-        return '<%s %s:%s>' % (self.__class__.__name__, self.column_type, self.name)
+        return '<%s, %s:%s>' % (self.__class__.__name__, self.column_type, self.name)
 
 
 
@@ -104,7 +110,7 @@ class TextField(Field):
 
 class ModelMetaclass(type):
     def __new__(cls, name, bases, attrs):
-        # exclude 'Model' clas
+        # exclude 'Model' class
         if name == 'Model':
             return type.__new__(cls, name, bases, attrs)
 
@@ -135,13 +141,13 @@ class ModelMetaclass(type):
 
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
         attrs['__mappings__'] = mappings
-        attrs['__table__'] = mappings
+        attrs['__table__'] = tableName
         attrs['__primary_key__'] = primaryKey
         attrs['__fields__'] = fields
         # make sql
         attrs['__select__'] = 'select `%s`, `%s` from `%s`' % (primaryKey, ','.join(escaped_fields), tableName)
-        attrs['__insert__'] = 'insert into `%s` (%s, `%s`) values(%s)' % (tableName,
-                                                                          ','.join(escaped_fields),
+        attrs['__insert__'] = 'insert into `%s` (%s, `%s`) values (%s)' % (tableName,
+                                                                          ', '.join(escaped_fields),
                                                                           primaryKey,
                                                                           create_args_string(len(escaped_fields) + 1))
         attrs['__update__'] = 'update `%s` set %s where `%s`=?' % (tableName,
@@ -234,14 +240,14 @@ class Model(dict, metaclass=ModelMetaclass):
 
     @asyncio.coroutine
     def save(self):
-        args = list(may(self.getValueOrDefault, self.__fields__))
+        args = list(map(self.getValueOrDefault, self.__fields__))
         args.append(self.getValueOrDefault(self.__primary_key__))
         rows = yield from execute(self.__insert__, args)
         if rows != 1:
-            logging.warning('failed to update by primary key: affected rows: %s' % rows)
+            logging.warning('failed to insert by primary key: affected rows: %s' % rows)
 
     @asyncio.coroutine
-    def update(self):
+    def updateAwesome(self):
         args = list(map(self.getValue, self.__fields__))
         args.append(self.getValue(self.__primary_key__))
         rows = yield from execute(self.__update__, args)
