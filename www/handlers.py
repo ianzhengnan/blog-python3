@@ -41,6 +41,11 @@ def get_page_index(page_str):
         p = 1
     return p
 
+def text2html(text):
+    lines = map(lambda s: '<p>%s</p>' % s.replace('&', '&amp;').replace('<', '&lt;').replace('>','&gt;'),
+                filter(lambda s:s.strip() != '', text.split('\n')))
+    return ''.join(lines)
+
 @asyncio.coroutine
 def cookie2user(cookie_str):
     '''
@@ -75,18 +80,25 @@ def cookie2user(cookie_str):
 @get('/')
 def index(request):
 
-    summary = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+    blogs = yield from Blog.findAll(orderBy='created_at desc')
 
-    blogs = [
-        Blog(id='1', name='Test Blog', summary=summary, created_at=time.time()-120),
-        Blog(id='2', name='Something Awesome', summary=summary, created_at=time.time()-3600),
-        Blog(id='3', name='Learn Swift', summary=summary, created_at=time.time()-7200),
-    ]
+    return {
+        '__template__': 'blogs.html',
+        'blogs': blogs
+    }
+
+@get('/blog/{id}')
+def show_blog(*, id):
+
+    blog = yield from Blog.find(id)
+    comments = yield from Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
+    for c in comments:
+        c.html_content = text2html(c.content)
 
     return {
         '__template__': 'blog.html',
-        'blogs': blogs,
-        '__user__': request.__user__
+        'blog': blog,
+        'comments': comments
     }
 
 @get('/api/users')
@@ -125,6 +137,15 @@ def manage_create_blog():
         'id': '',
         'action': '/api/blogs'
     }
+
+@get('/manage/blogs/edit')
+def manage_edit_blog(request, *, id):
+    return {
+        '__template__': 'manage_blog_edit.html',
+        'id': id,
+        'action': '/api/blogs/%s' % id
+    }
+
 
 @get('/api/blogs/{id}')
 def api_get_blog(*, id):
@@ -172,7 +193,7 @@ def api_register_user(*, email, name, passwd):
     uid = next_id()
     sha1_passwd = '%s:%s' % (uid, passwd)
     user = User(id=uid, name=name, email=email, passwd=hashlib.sha1(sha1_passwd.encode('utf-8')).hexdigest(),
-                image='http://www.gravatar.com/avatar/%s?d=mm&s=120' % hashlib.md5(email.encode('utf-8')).hexdigest())
+                image='http://s.gravatar.com/avatar/%s?s=120' % hashlib.md5(email.encode('utf-8')).hexdigest())
     yield from user.save()
 
     #make session cookie
@@ -228,3 +249,38 @@ def api_create_blog(request, *, name, summary, content):
     yield from blog.save()
     return blog
 
+@post('/api/blogs/{id}')
+def api_edit_blog(request, *, id, name, summary, content):
+    check_admin(request)
+    if not name or not name.strip():
+        raise APIValueError('name', 'name cannot be empty')
+    if not summary or not summary.strip():
+        raise APIValueError('summary', 'summary cannot be empty')
+    if not content or not content.strip():
+        raise APIValueError('content', 'content cannot be empty')
+
+    blog = yield from Blog.find(id)
+    blog.name = name.strip()
+    blog.summary = summary.strip()
+    blog.content = content.strip()
+    yield from blog.updateAwesome()
+    return blog
+
+@post('/api/blogs/{id}/delete')
+def api_delete_blog(request, *, id):
+    check_admin(request)
+    blog = yield from Blog.find(id)
+    yield from blog.remove()
+    return dict(id=id)
+
+@post('/api/blogs/{blog_id}/comments')
+def create_comment(*, blog_id, content):
+    if not content or not content.strip():
+        raise APIValueError('content', 'content cannot be empty')
+
+    #get blog
+    blog = yield from Blog.find(blog_id)
+    comment = Comment(user_id=blog.user_id, user_name=blog.user_name, user_image=blog.user_image,
+                      blog_id=blog_id, content=content)
+    yield from comment.save()
+    return comment

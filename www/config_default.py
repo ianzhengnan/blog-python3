@@ -11,5 +11,8 @@ configs = {
     },
     'session': {
         'secret': 'AwEsOmE'
+    },
+    'page':{
+        'page_size': 10
     }
 }
