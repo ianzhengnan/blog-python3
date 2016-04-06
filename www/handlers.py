@@ -102,12 +102,18 @@ def show_blog(*, id):
     }
 
 @get('/api/users')
-def api_get_users():
+def api_get_users(*, page='1'):
+    page_index = get_page_index(page)
+    num = yield from User.findNumber('count(id)')
+    p = Page(num, page_index)
+    if num == 0:
+        return dict(page=p, users=())
+
     users = yield from User.findAll(orderBy='created_at desc')
     for u in users:
         u.passwd = '*********'
 
-    return dict(users = users)
+    return dict(page=p, users=users)
 
 @get('/register')
 def register():
@@ -165,11 +171,35 @@ def api_blogs(*, page='1'):
     blogs = yield from Blog.findAll(orderBy='created_at desc', limit=(p.offset, p.limit))
     return dict(page=p, blogs=blogs)
 
+@get('/api/comments')
+def api_comments(*, page='1'):
+    page_index = get_page_index(page)
+    num = yield from Comment.findNumber('count(id)')
+    p = Page(num, page_index)
+    if num == 0:
+        return dict(page=p, comments=())
+
+    comments = yield from Comment.findAll(orderBy='created_at desc', limit=(p.offset, p.limit))
+    return dict(page=p, comments=comments)
 
 @get('/manage/blogs')
 def manage_blogs(*, page='1'):
     return {
         '__template__': 'manage_blogs.html',
+        'page_index': get_page_index(page)
+    }
+
+@get('/manage/comments')
+def manage_comments(*, page='1'):
+    return {
+        '__template__': 'manage_comments.html',
+        'page_index': get_page_index(page)
+    }
+
+@get('/manage/users')
+def manage_users(*, page='1'):
+    return {
+        '__template__': 'manage_users.html',
         'page_index': get_page_index(page)
     }
 
@@ -284,3 +314,11 @@ def create_comment(*, blog_id, content):
                       blog_id=blog_id, content=content)
     yield from comment.save()
     return comment
+
+@post('/api/comments/{id}/delete')
+def delete_comment(request, *, id):
+    check_admin(request)
+    comment = yield from Comment.find(id)
+    yield from comment.remove()
+    return dict(id=id)
+
