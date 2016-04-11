@@ -56,7 +56,7 @@ def deploy():
 
     # restart python and nginx service
     with settings(warn_only=True):
-	sudo('supervisorctl stop awesome')
-	sudo('supervisorctl start awesome')
+	sudo('supervisorctl -c /etc/supervisor/supervisord.conf stop awesome')
+	sudo('supervisorctl -c /etc/supervisor/supervisord.conf start awesome')
 	sudo('/etc/init.d/nginx reload')
   
