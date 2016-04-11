@@ -44,12 +44,12 @@ def deploy():
 	sudo('mkdir %s' % newdir)
 
     # unzip tar to new directory
-    with cd('%s/%s' % _REMOTE_TMP_TAR):
+    with cd('%s/%s' % (_REMOTE_BASE_DIR, newdir)):
 	sudo('tar -xzvf %s' % _REMOTE_TMP_TAR)
 
     # re-set the soft link
     with cd(_REMOTE_BASE_DIR):
-        sudo('rm -f www')
+        sudo('rm -rf www')
 	sudo('ln -s %s www' % newdir)
 	sudo('chown www-data:www-data www')
 	sudo('chown -R www-data:www-data %s' % newdir)
