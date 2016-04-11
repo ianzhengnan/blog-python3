@@ -16,6 +16,8 @@ from models import User, Comment, Blog, next_id
 from apis import APIValueError, APIError, APIPermissionError, Page
 from config import configs
 
+import markdown2
+
 COOKIE_NAME = 'awesession'
 _COOKIE_KEY = configs.session.secret
 
@@ -94,7 +96,7 @@ def show_blog(*, id):
     comments = yield from Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
     for c in comments:
         c.html_content = text2html(c.content)
-
+    blog.html_content = markdown2.markdown(blog.content)
     return {
         '__template__': 'blog.html',
         'blog': blog,
