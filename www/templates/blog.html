@@ -17,7 +17,7 @@
 			if(content === ''){
 				return $form.showFormError('请输入评论内容！');
 			}
-			$form.postJSON(comment_url, {content: content}, function (err, result){
+			$form.postJSON(comment_url, {content: marked(content)}, function (err, result){
 				if(err){
 					return $form.showFormError(err);
 				}
@@ -55,7 +55,7 @@
 				<form id="form-comment" class="uk-form">
 					<div class="uk-alert uk-alert-danger uk-hidden"></div>
 					<div class="uk-form-row">
-						<textarea data-uk-htmleditor="{mode: 'split', maxsplitsize: 600, markdown: true}" rows="6" placeholder="说点什么吧" style="display: none;"></textarea>
+						<textarea data-uk-htmleditor="{mode: 'split', maxsplitsize: 600, markdown: true}" placeholder="说点什么吧" ></textarea>
 					</div>
 					<div class="uk-form-row">
 						<button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-comment"></i> 发表评论</button>

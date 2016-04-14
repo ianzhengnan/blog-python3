@@ -17,6 +17,11 @@
 					submit: function(event){
 						event.preventDefault();
 						var $form = $('#vm').find('form');
+						var content = $form.find('[name=content]').val().trim();
+						if(content === ''){
+							return $form.showFormError('请输入内容！');
+						}
+						this.$data.content = marked(content);
 						$form.postJSON(action, this.$data, function(err, r){
 							if(err){
 								$form.showFormError(err);
@@ -88,13 +93,13 @@
 			<div class="uk-form-row">
 				<label class="uk-form-label">摘要：</label>
 				<div class="uk-form-controls">
-					<textarea v-model="summary" rows="4" name="summary" placeholder="摘要" class="uk-width-1-1" data-uk-htmleditor="{markdown:true}" style="resize: none;"></textarea>
+					<textarea v-model="summary" rows="4" name="summary" placeholder="摘要" class="uk-width-1-1" style="resize: none;"></textarea>
 				</div>
 			</div>
 			<div class="uk-form-row">
 				<label class="uk-form-label">内容：</label>
 				<div class="uk-form-controls">
-					<textarea v-model="content" rows="16" name="content" placeholder="内容" class="uk-width-1-1" data-uk-htmleditor="{markdown:true}" style="resize: none;"></textarea>
+					<textarea v-model="content" rows="16" name="content" placeholder="内容" class="uk-width-1-1" data-uk-htmleditor="{mode: 'split', maxsplitsize: 600, markdown: true}" style="resize: none;"></textarea>
 				</div>
 			</div>
 			<div class="uk-form-row">

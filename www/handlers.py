@@ -95,7 +95,7 @@ def show_blog(*, id):
     blog = yield from Blog.find(id)
     comments = yield from Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
     for c in comments:
-        c.html_content = text2html(c.content)
+        c.html_content = c.content #text2html(c.content)
     blog.html_content = markdown2.markdown(blog.content)
     return {
         '__template__': 'blog.html',
