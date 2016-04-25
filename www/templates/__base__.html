@@ -2,14 +2,14 @@
 <html>
 <head>
 	<title>{% block title %} ? {% endblock %} - Awesome Python Webapp</title>
-	<link rel="stylesheet" type="text/css" href="/static/themes/default/css/blog-python3.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/blog-python3.css">
 	<link rel="stylesheet" type="text/css" href="/static/css/awesome.css">
 	<link rel="stylesheet" type="text/css" href="/static/css/codemirror.css">
 
 	<script type="text/javascript" src="/static/js/jquery.min.js"></script>
 	<script type="text/javascript" src="/static/js/uikit.js"></script>
 	<script type="text/javascript" src="/static/js/sha1.min.js"></script>
-	<script type="text/javascript" src="/static/js/sticky.min.js"></script>
+	<script type="text/javascript" src="/static/js/components/sticky.js"></script>
 	<script type="text/javascript" src="/static/js/vue.min.js"></script>
 	<script type="text/javascript" src="/static/js/awesome.js"></script>
 	<script type="text/javascript" src="/static/js/marked.min.js"></script>
@@ -25,13 +25,13 @@
 </head>
 <body>
 	<nav class="uk-navbar uk-navbar-attached uk-margin-bottom">
-		<a href="#" class="uk-navbar-toggle uk-visible-small"></a>
-		<div class="uk-container uk-container-center">
-			<a href="/" class="uk-navbar-brand">Awesome</a>
+		<!-- <a href="#" class="uk-navbar-toggle uk-visible-small"></a> -->
+		<div data-uk-sticky="{showup: true, animation: 'uk-animation-slide-top'}" class="uk-container uk-container-center">
+			<a href="/" class="uk-navbar-brand">QYQ</a>
 			<ul class="uk-navbar-nav uk-hidden-small">
 				<li data-url="blogs"><a href="/"><i class="uk-icon-home"></i> 日志</a></li>
-				<li><a target="_blank" href="#"><i class="uk-icon-book"></i> 教程</a></li>
-				<li><a target="_blank" href="#"><i class="uk-icon-code"></i> 源码</a></li>
+				<li><a target="_blank" href="#"><i class="uk-icon-book"></i> 读书</a></li>
+				<li><a target="_blank" href="#"><i class="uk-icon-code"></i> 编程</a></li>
 			</ul>
 
 			<div class="uk-navbar-flip">
@@ -53,6 +53,7 @@
 			</div>
 		</div>
 	</nav>
+
 
 	<div class="uk-container uk-container-center">
 		<div class="uk-grid">

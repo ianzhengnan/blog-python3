@@ -6,6 +6,8 @@
 
 
 <script>
+
+
 	
 </script>
 
@@ -15,12 +17,15 @@
 
 	<div class="uk-width-medium-3-4">
 	{% for blog in blogs %}
-		<article class="uk-article">
-			<h2><a href="/blog/{{ blog.id }}">{{ blog.name }}</a></h2>
-			<p class="uk-article-meta">发表于{{ blog.created_at|datetime }}</p>
-			<p>{{ blog.summary }}</p>
-			<p><a href="/blog/{{ blog.id }}">继续阅读 <i class="uk-icon-angle-double-right"></i></a></p>
-		</article>
+
+			<div class="post-preview">
+				<a href="/blog/{{ blog.id }}">
+					<h2 class="post-title">{{ blog.name }}</h2>
+					<h3 class="post-subtitle">{{ blog.summary }}</h3>
+					<div class="post-content-preview">{{ blog.html_content | truncate(220) }}</div>
+				</a>
+			</div>
+		<p class="uk-article-meta">发表于{{ blog.created_at|datetime }}</p>
 		<hr class="uk-article-divider">
 	{% endfor %}
 	</div>

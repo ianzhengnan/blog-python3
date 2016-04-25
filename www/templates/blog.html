@@ -33,7 +33,7 @@
 
 {% block content %}
 
-	<div class="uk-width-medium-3-4">
+	<div class="uk-width-1-1">
 		<article class="uk-article">
 			<h2>{{ blog.name }}</h2>
 			<p class="uk-article-meta">发表于{{ blog.created_at|datetime }}</p>
@@ -43,7 +43,7 @@
 		<hr class="uk-article-divider">
 
 		{% if __user__ %}
-		<h3>发表评论</h3>
+		<h5>发表评论</h5>
 
 		<article class="uk-comment">
 			<header class="uk-comment-header">
@@ -89,7 +89,7 @@
 		</ul>
 	</div>
 
-	<div class="uk-width-medium-1-4">
+<!-- 	<div class="uk-width-medium-1-4">
 		<div class="uk-panel uk-panel-box">
 			<div class="uk-text-center">
 				<img src="{{ blog.user_image }}" class="uk-border-circle" width="120" height="120">
@@ -104,6 +104,6 @@
 				<li><i class="uk-icon-link"></i> <a href="#">读书</a></li>
 			</ul>
 		</div>
-	</div>
+	</div> -->
 
 {% endblock %}

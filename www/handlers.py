@@ -84,6 +84,9 @@ def index(request):
 
     blogs = yield from Blog.findAll(orderBy='created_at desc')
 
+    for blog in blogs:
+        blog.html_content = markdown2.markdown(blog.content)
+
     return {
         '__template__': 'blogs.html',
         'blogs': blogs
@@ -158,6 +161,7 @@ def manage_edit_blog(request, *, id):
 @get('/api/blogs/{id}')
 def api_get_blog(*, id):
     blog = yield from Blog.find(id)
+    blog.html_content = markdown2.markdown(blog.content)
     return blog
 
 
